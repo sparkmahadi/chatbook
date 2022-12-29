@@ -5,6 +5,7 @@ import { Button } from "@chakra-ui/button";
 import { FormControl, FormLabel } from "@chakra-ui/form-control";
 import { Input, InputGroup, InputRightElement } from "@chakra-ui/input";
 import { VStack } from "@chakra-ui/layout";
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => { const [show, setShow] = useState(false);
     const handleClick = () => setShow(!show);
@@ -13,7 +14,7 @@ const Login = () => { const [show, setShow] = useState(false);
     const [password, setPassword] = useState();
     const [loading, setLoading] = useState(false);
   
-    // const history = useHistory();
+    const navigate = useNavigate();
   
     const submitHandler = async () => {
       setLoading(true);
@@ -29,7 +30,8 @@ const Login = () => { const [show, setShow] = useState(false);
         return;
       }
   
-      // console.log(email, password);
+      console.log(email, password);
+
       try {
         const config = {
           headers: {
@@ -38,12 +40,13 @@ const Login = () => { const [show, setShow] = useState(false);
         };
   
         const { data } = await axios.post(
-          "/api/user/login",
+          "http://localhost:5000/api/user/login",
           { email, password },
           config
         );
   
         // console.log(JSON.stringify(data));
+
         toast({
           title: "Login Successful",
           status: "success",
@@ -53,7 +56,7 @@ const Login = () => { const [show, setShow] = useState(false);
         });
         localStorage.setItem("userInfo", JSON.stringify(data));
         setLoading(false);
-        // history.push("/chats");
+        navigate("/chats");
       } catch (error) {
         toast({
           title: "Error Occured!",
