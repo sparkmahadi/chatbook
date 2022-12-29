@@ -1,12 +1,12 @@
 import { Button, FormControl, FormLabel, Input, InputGroup, InputRightElement, useToast, VStack } from '@chakra-ui/react';
 import axios from 'axios';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 const SignUp = () => {
     const [show, setShow] = useState(false);
     const handleClick = () => setShow(!show);
     const toast = useToast();
-    const navigate = useNavigate();
+    const navigate = useHistory();
 
     const [name, setName] = useState();
     const [email, setEmail] = useState();
@@ -72,7 +72,7 @@ const SignUp = () => {
 
             localStorage.setItem("userInfo", JSON.stringify(data));
             setPicLoading(false);
-            navigate("/chats");
+            navigate.push("/chats");
         }
         catch (error) {
             toast({

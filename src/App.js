@@ -1,12 +1,13 @@
-import { RouterProvider } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import './App.css';
-import { router } from './routes/router';
+import ChatPage from './pages/ChatPage';
+import Homepage from './pages/Homepage';
 
 function App() {
   return (
-    <div className='App'>
-      <RouterProvider router={router}>
-      </RouterProvider>
+    <div className="App">
+      <Route path="/" component={Homepage} exact />
+      <Route path="/chats" component={ChatPage} />
     </div>
   );
 }
