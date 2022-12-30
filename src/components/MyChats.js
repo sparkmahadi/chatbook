@@ -9,7 +9,8 @@ import ChatLoading from "./ChatLoading";
 import GroupChatModal from "./miscellaneous/GroupChatModal";
 
 const MyChats = ({ fetchAgain }) => {
-    const [loggedUser, setLoggedUser] = useState();
+    const [loggedUser, setLoggedUser] = useState({});
+    const [userLoading, setUserLoading] = useState(false);
 
     const { selectedChat, setSelectedChat, user, chats, setChats } = ChatState();
 
@@ -24,7 +25,7 @@ const MyChats = ({ fetchAgain }) => {
                 },
             };
 
-            const { data } = await axios.get("/api/chat", config);
+            const { data } = await axios.get("http://localhost:5000/api/chat", config);
             setChats(data);
         } catch (error) {
             toast({
@@ -39,11 +40,14 @@ const MyChats = ({ fetchAgain }) => {
     };
 
     useEffect(() => {
+        setUserLoading(true);
         setLoggedUser(JSON.parse(localStorage.getItem("userInfo")));
         fetchChats();
+        setUserLoading(false);
         // eslint-disable-next-line
     }, [fetchAgain]);
 
+    console.log((loggedUser, chats));
     return (
         <Box
             d={{ base: selectedChat ? "none" : "flex", md: "flex" }}
@@ -100,9 +104,13 @@ const MyChats = ({ fetchAgain }) => {
                                 key={chat._id}
                             >
                                 <Text>
-                                    {!chat.isGroupChat
-                                        ? getSender(loggedUser, chat.users)
-                                        : chat.chatName}
+                                    {
+                                        userLoading ? 'Loading'
+                                        :
+                                            !chat.isGroupChat
+                                                ? getSender(loggedUser, chat.users)
+                                                : chat.chatName
+                                    }
                                 </Text>
                                 {chat.latestMessage && (
                                     <Text fontSize="xs">

@@ -15,6 +15,7 @@ const ChatProvider = ({ children }) => {
     const userInfo = JSON.parse(localStorage.getItem("userInfo"));
     setUser(userInfo);
 
+    console.log('userInfo changed', userInfo);
     if (!userInfo) history.push("/");
   }, [history]);
 

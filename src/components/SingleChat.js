@@ -8,8 +8,12 @@ import UpdateGroupChatModal from './miscellaneous/UpdateGroupChatModal';
 import axios from 'axios';
 import './styles.css';
 import ScrollableChat from './ScrollableChat';
+import io from 'socket.io-client';
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
+
+    const ENDPOINT = "http://localhost:5000"; // "https://talk-a-tive.herokuapp.com"; -> After deployment
+    var socket, selectedChatCompare;
 
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -31,85 +35,97 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
     const { user, selectedChat, setSelectedChat } = ChatState();
 
+    socket = io(ENDPOINT);
+    useEffect(() => {
+        socket.emit("setup", user);
+        socket.on("connected", () => setSocketConnected(true));
+        // socket.on("typing", () => setIsTyping(true));
+        // socket.on("stop typing", () => setIsTyping(false));
+
+        // eslint-disable-next-line
+    }, []);
+
     const fetchMessages = async () => {
         if (!selectedChat) return;
-    
+
         try {
-          const config = {
-            headers: {
-              Authorization: `Bearer ${user.token}`,
-            },
-          };
-    
-          setLoading(true);
-    
-          const { data } = await axios.get(
-            `http://localhost:5000/api/message/${selectedChat._id}`,
-            config
-          );
-          setMessages(data);
-          console.log(messages);
-          setLoading(false);
-    
-        //   socket.emit("join chat", selectedChat._id);
+            const config = {
+                headers: {
+                    Authorization: `Bearer ${user.token}`,
+                },
+            };
+
+            setLoading(true);
+
+            const { data } = await axios.get(
+                `http://localhost:5000/api/message/${selectedChat._id}`,
+                config
+            );
+            setMessages(data);
+            
+            setLoading(false);
+            socket.emit("joinChat", selectedChat._id);
         } catch (error) {
-          toast({
-            title: "Error Occured!",
-            description: "Failed to Load the Messages",
-            status: "error",
-            duration: 5000,
-            isClosable: true,
-            position: "bottom",
-          });
+            toast({
+                title: "Error Occured!",
+                description: "Failed to Load the Messages",
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+                position: "bottom",
+            });
         }
-      };
+    };
 
     const sendMessage = async (event) => {
         if (event.key === "Enter" && newMessage) {
             // socket.emit("stop typing", selectedChat._id);
             try {
-              const config = {
-                headers: {
-                  "Content-type": "application/json",
-                  Authorization: `Bearer ${user.token}`,
-                },
-              };
-              setNewMessage("");
-              const { data } = await axios.post(
-                "http://localhost:5000/api/message",
-                {
-                  content: newMessage,
-                  chatId: selectedChat._id,
-                },
-                config
-              );
-            //   socket.emit("new message", data);
-              setMessages([...messages, data]);
-            //   console.log(data);
-            } 
-            catch (error) {
-              toast({
-                title: "Error Occured!",
-                description: "Failed to send the Message",
-                status: "error",
-                duration: 5000,
-                isClosable: true,
-                position: "bottom",
-              });
+                const config = {
+                    headers: {
+                        "Content-type": "application/json",
+                        Authorization: `Bearer ${user.token}`,
+                    },
+                };
+                setNewMessage("");
+                const { data } = await axios.post(
+                    "http://localhost:5000/api/message",
+                    {
+                        content: newMessage,
+                        chatId: selectedChat._id,
+                    },
+                    config
+                );
+                socket.emit("new message", data);
+                setMessages([...messages, data]);
+                //   console.log(data);
             }
-          }
+            catch (error) {
+                toast({
+                    title: "Error Occured!",
+                    description: "Failed to send the Message",
+                    status: "error",
+                    duration: 5000,
+                    isClosable: true,
+                    position: "bottom",
+                });
+            }
+        }
     };
-    const typingHandler =  (e) => {
+    const typingHandler = (e) => {
         setNewMessage(e.target.value);
 
         // typing indicator logic
     };
 
     useEffect(() => {
-        fetchMessages();
-    
-        // selectedChatCompare = selectedChat;
-      }, [selectedChat]);
+        if(socketConnected){
+            fetchMessages();
+        }
+
+        selectedChatCompare = selectedChat;
+    }, [selectedChat]);
+
 
     return (
         <>
