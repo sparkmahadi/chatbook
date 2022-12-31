@@ -12,7 +12,7 @@ import io from 'socket.io-client';
 import Lottie from 'react-lottie';
 import animationData from '../animations/typing.json';
 
-const ENDPOINT = "http://localhost:5000"; // "https://talk-a-tive.herokuapp.com"; -> After deployment
+const ENDPOINT = "https://chatbook-server.onrender.com"; //-> After deployment
 var socket, selectedChatCompare;
 
 
