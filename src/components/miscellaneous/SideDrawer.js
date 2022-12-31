@@ -29,6 +29,8 @@ import ProfileModal from "./ProfileModal";
 import { ChatState } from "../../context/ChatProvider";
 import { getSender } from "../../config/ChatLogics";
 import UserListItem from './../UserAvatar/UserListItem';
+import NotificationBadge from "react-notification-badge/lib/components/NotificationBadge";
+import { Effect } from "react-notification-badge";
 
 function SideDrawer() {
   const [search, setSearch] = useState("");
@@ -37,13 +39,7 @@ function SideDrawer() {
   const [loadingChat, setLoadingChat] = useState(false);
 
   const {
-    setSelectedChat,
-    user,
-    notification,
-    setNotification,
-    chats,
-    setChats,
-  } = ChatState();
+    setSelectedChat, user, notification, setNotification, chats, setChats, } = ChatState();
 
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -103,7 +99,7 @@ function SideDrawer() {
       };
       const { data } = await axios.post(`/api/chat`, { userId }, config);
 
-      if (!chats.find((c) => c._id === data._id)) {setChats([data, ...chats])};
+      if (!chats.find((c) => c._id === data._id)) { setChats([data, ...chats]) };
       setSelectedChat(data);
       setLoadingChat(false);
       onClose();
@@ -142,17 +138,17 @@ function SideDrawer() {
         <Text fontSize="2xl" fontFamily="Work sans">
           ChatBook
         </Text>
-        
+
         <div>
           <Menu>
             <MenuButton p={1}>
-              {/* <NotificationBadge
+              <NotificationBadge
                 count={notification.length}
                 effect={Effect.SCALE}
-              /> */}
+              />
               <BellIcon fontSize="2xl" m={1} />
             </MenuButton>
-            {/* <MenuList pl={2}>
+            <MenuList pl={2}>
               {!notification.length && "No New Messages"}
               {notification.map((notif) => (
                 <MenuItem
@@ -167,7 +163,7 @@ function SideDrawer() {
                     : `New Message from ${getSender(user, notif.chat.users)}`}
                 </MenuItem>
               ))}
-            </MenuList> */}
+            </MenuList>
           </Menu>
           <Menu>
             <MenuButton as={Button} bg="white" rightIcon={<ChevronDownIcon />}>

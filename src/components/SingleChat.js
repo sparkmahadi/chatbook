@@ -9,38 +9,40 @@ import axios from 'axios';
 import './styles.css';
 import ScrollableChat from './ScrollableChat';
 import io from 'socket.io-client';
+import Lottie from 'react-lottie';
+import animationData from '../animations/typing.json';
+
+const ENDPOINT = "http://localhost:5000"; // "https://talk-a-tive.herokuapp.com"; -> After deployment
+var socket, selectedChatCompare;
+
 
 const SingleChat = ({ fetchAgain, setFetchAgain }) => {
-
-    const ENDPOINT = "http://localhost:5000"; // "https://talk-a-tive.herokuapp.com"; -> After deployment
-    var socket, selectedChatCompare;
-
     const [messages, setMessages] = useState([]);
+    const [receivedMessage, setReceivedMessage] = useState({});
     const [loading, setLoading] = useState(false);
     const [newMessage, setNewMessage] = useState("");
     const [socketConnected, setSocketConnected] = useState(false);
     const [typing, setTyping] = useState(false);
-    const [istyping, setIsTyping] = useState(false);
+    const [isTyping, setIsTyping] = useState(false);
     const toast = useToast();
 
-    // const defaultOptions = {
-    //   loop: true,
-    //   autoplay: true,
-    //   animationData: animationData,
-    //   rendererSettings: {
-    //     preserveAspectRatio: "xMidYMid slice",
-    //   },
-    // };
+    const defaultOptions = {
+        loop: true,
+        autoplay: true,
+        animationData: animationData,
+        rendererSettings: {
+            preserveAspectRatio: "xMidYMid slice",
+        },
+    };
 
-
-    const { user, selectedChat, setSelectedChat } = ChatState();
+    const { user, selectedChat, setSelectedChat, notification, setNotification } = ChatState();
 
     socket = io(ENDPOINT);
     useEffect(() => {
         socket.emit("setup", user);
         socket.on("connected", () => setSocketConnected(true));
-        // socket.on("typing", () => setIsTyping(true));
-        // socket.on("stop typing", () => setIsTyping(false));
+        socket.on("typing", () => setIsTyping(true));
+        socket.on("stop typing", () => setIsTyping(false));
 
         // eslint-disable-next-line
     }, []);
@@ -62,8 +64,9 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                 config
             );
             setMessages(data);
-            
+            console.log('during fetching', 'messages:', messages, "data:", data);
             setLoading(false);
+
             socket.emit("joinChat", selectedChat._id);
         } catch (error) {
             toast({
@@ -79,7 +82,7 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
 
     const sendMessage = async (event) => {
         if (event.key === "Enter" && newMessage) {
-            // socket.emit("stop typing", selectedChat._id);
+            socket.emit("stop typing", selectedChat._id);
             try {
                 const config = {
                     headers: {
@@ -96,9 +99,9 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                     },
                     config
                 );
-                socket.emit("new message", data);
+                socket.emit("newMessage", data);
                 setMessages([...messages, data]);
-                //   console.log(data);
+                console.log('during sending', 'messages:', messages, "data:", data);
             }
             catch (error) {
                 toast({
@@ -115,17 +118,50 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
     const typingHandler = (e) => {
         setNewMessage(e.target.value);
 
-        // typing indicator logic
+        if (!socketConnected) return;
+
+        if (!typing) {
+            setTyping(true);
+            socket.emit("typing", selectedChat._id);
+        }
+        let lastTypingTime = new Date().getTime();
+        var timerLength = 3000;
+        setTimeout(() => {
+            var timeNow = new Date().getTime();
+            var timeDiff = timeNow - lastTypingTime;
+            if (timeDiff >= timerLength && typing) {
+                socket.emit("stop typing", selectedChat._id);
+                setTyping(false);
+            }
+        }, timerLength);
     };
 
     useEffect(() => {
-        if(socketConnected){
-            fetchMessages();
-        }
+        fetchMessages();
 
         selectedChatCompare = selectedChat;
+        // eslint-disable-next-line
     }, [selectedChat]);
 
+    useEffect(() => {
+        socket.on("messageReceived", (newMessageReceived) => {
+            console.log('during receiving', 'messages:', messages, "data:", newMessageReceived);
+            if (
+                !selectedChatCompare || // if chat is not selected or doesn't match current chat
+                selectedChatCompare._id !== newMessageReceived.chat._id
+            ) {
+                console.log(notification, setNotification);
+                if (!notification.includes(newMessageReceived)) {
+                    setNotification([newMessageReceived, ...notification]);
+                    setFetchAgain(!fetchAgain);
+                }
+            } else {
+                setMessages([...messages, newMessageReceived]);
+                console.log('after setting and receiving', 'messages:', messages, "data:", newMessageReceived);
+
+            }
+        });
+    }, [socket]);
 
     return (
         <>
@@ -201,14 +237,14 @@ const SingleChat = ({ fetchAgain, setFetchAgain }) => {
                             isRequired
                             mt={3}
                         >
-                            {istyping ? (
+                            {isTyping ? (
                                 <div>
-                                    {/* <Lottie
+                                    <Lottie
                                         options={defaultOptions}
                                         // height={50}
                                         width={70}
                                         style={{ marginBottom: 15, marginLeft: 0 }}
-                                    /> */}
+                                    />
                                 </div>
                             ) : (
                                 <></>

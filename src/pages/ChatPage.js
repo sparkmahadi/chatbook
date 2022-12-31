@@ -8,9 +8,12 @@ import ChatBox from './../components/ChatBox';
 import { useState } from 'react';
 
 const ChatPage = () => {
-    const {user} = ChatState();
+    const {user, fetchUser} = ChatState();
     const [fetchAgain, setFetchAgain] = useState(false);
-    console.log(user);
+    if(!user){
+      fetchUser();
+    }
+    // console.log(user);
     return (
         <div style={{ width: "100%" }}>
       {user && <SideDrawer />}

@@ -8,16 +8,19 @@ const ChatProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [notification, setNotification] = useState([]);
   const [chats, setChats] = useState();
+  const [userLoading, setUserLoading] = useState(false);
+  const [callFetch, setCallFetch] = useState(false);
 
   const history = useHistory();
-
+  const fetchUser = () =>{
+    setCallFetch(true);
+  }
   useEffect(() => {
     const userInfo = JSON.parse(localStorage.getItem("userInfo"));
     setUser(userInfo);
-
     console.log('userInfo changed', userInfo);
     if (!userInfo) history.push("/");
-  }, [history]);
+  }, [history, callFetch]);
 
   return (
     <ChatContext.Provider
@@ -30,6 +33,8 @@ const ChatProvider = ({ children }) => {
         setNotification,
         chats,
         setChats,
+        userLoading,
+        fetchUser
       }}
     >
       {children}
