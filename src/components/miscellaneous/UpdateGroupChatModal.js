@@ -33,7 +33,7 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain, fetchMessages }) => {
                     Authorization: `Bearer ${user.token}`,
                 },
             };
-            const { data } = await axios.get(`http://localhost:5000/api/user?search=${search}`, config);
+            const { data } = await axios.get(`https://chatbook-server.onrender.com/api/user?search=${search}`, config);
             console.log(data);
             setLoading(false);
             setSearchResult(data);
@@ -61,7 +61,7 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain, fetchMessages }) => {
                 },
             };
             const { data } = await axios.put(
-                `http://localhost:5000/api/chat/rename`,
+                `https://chatbook-server.onrender.com/api/chat/rename`,
                 {
                     chatId: selectedChat._id,
                     chatName: groupChatName,
@@ -119,7 +119,7 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain, fetchMessages }) => {
                 },
             };
             const { data } = await axios.put(
-                `http://localhost:5000/api/chat/groupadd`,
+                `https://chatbook-server.onrender.com/api/chat/groupadd`,
                 {
                     chatId: selectedChat._id,
                     userId: user1._id,
@@ -164,7 +164,7 @@ const UpdateGroupChatModal = ({ fetchAgain, setFetchAgain, fetchMessages }) => {
                 },
             };
             const { data } = await axios.put(
-                `http://localhost:5000/api/chat/groupremove`,
+                `https://chatbook-server.onrender.com/api/chat/groupremove`,
                 {
                     chatId: selectedChat._id,
                     userId: user1._id,

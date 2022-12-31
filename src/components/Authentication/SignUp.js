@@ -49,7 +49,7 @@ const SignUp = () => {
             };
 
             const { data } = await axios.post(
-                "http://localhost:5000/api/user",
+                "https://chatbook-server.onrender.com/api/user",
                 {
                     name,
                     email,
